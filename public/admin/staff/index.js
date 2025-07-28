@@ -1,39 +1,36 @@
-window.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('form'); // Only have 1 form in this HTML
-    form.onsubmit = function (e) {
-        e.preventDefault(); // prevent using the default submit behavior
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById("staffTransferForm");
 
-        const staffNumber = document.querySelector('#staffNumber').value;
-        const departmentCode = document.querySelector('#departmentCode').value;
-        
-        // Create student object
-        const staff = {
-            staffNumber: staffNumber,
-            departmentCode: departmentCode
-        };
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-        const token = localStorage.getItem('token');
+    const staffNumber = document.getElementById('staffNumber').value;
+    const department = document.getElementById('department').value;
+    const token = localStorage.getItem("token");
 
-        // Send POST request to "/enrol" endpoint
-        fetch('/staff/transferStaff', {
-            method: 'POST',
-            headers: {
-                authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(staff)
-        }).then(function (response) {
-            if (response.ok) {
-                alert(`Staff with staff number ${staffNumber} transferred!`);
-            } else {
-                // If fail, show the error message
-                response.json().then(function (data) {
-                    alert(data.error);
-                });
-            }
-        })
-        .catch(function (error) {
-            alert(`Error transferring staff`);
-        });       
+    const data = {
+      staffNumber,
+      department
     };
+
+    try {
+      const response = await fetch('/staff/transferStaff', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        alert('Staff transfer successful!');
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.message}`);
+      }
+    } catch (error) {
+      alert(`Network error: ${error.message}`);
+    }
+  });
 });
